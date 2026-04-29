@@ -27,7 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.get("/auth/me");
       setUser(res.data.data);
-    } catch {
+    } catch(err) {
+       console.error("Auth fetch failed:", err);
       setUser(null);
     } finally {
       setLoading(false);
