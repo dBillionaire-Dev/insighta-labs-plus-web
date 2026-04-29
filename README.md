@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# Insighta Labs+ Web Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based interface for the Insighta Labs+ demographic intelligence platform.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- React Router v7
+- Axios (with auto token refresh)
+- Vite
 
-## React Compiler
+## Local Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+cp .env.example .env    # set VITE_API_URL
+npm run dev             # runs on http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Backend API URL |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Pages
+
+| Route | Description |
+|---|---|
+| `/login` | GitHub OAuth login |
+| `/dashboard` | Stats overview + quick actions |
+| `/profiles` | Filter, sort, paginate, export profiles |
+| `/profiles/:id` | Single profile detail + delete (admin) |
+| `/search` | Natural language search |
+| `/account` | Current user info + logout |
+
+## Auth Flow
+
+- User clicks "Continue with GitHub" on `/login`
+- Browser redirects to backend `/auth/github`
+- Backend redirects to GitHub OAuth
+- GitHub redirects back to backend `/auth/github/callback`
+- Backend sets HTTP-only `access_token` + `refresh_token` cookies
+- Backend redirects browser to `/dashboard`
+- Web portal reads user from `/auth/me` on load
+- Axios auto-refreshes tokens silently on 401 using the refresh cookie
+- If refresh fails, user is redirected to `/login`
+
+## Security
+
+- Tokens are in HTTP-only cookies — never accessible via JavaScript
+- All state-changing requests include credentials
+- ProtectedRoute redirects unauthenticated users to `/login`
+
+## Deployment (Vercel)
+
+```bash
+npm run build
+# deploy dist/ folder to Vercel
+# set VITE_API_URL in Vercel environment variables
 ```
